@@ -1,6 +1,5 @@
 const properties = require('./json/properties.json');
 const users = require('./json/users.json');
-
 //connect to database
 const { Pool } = require('pg');
 
@@ -10,7 +9,6 @@ const pool = new Pool({
   host: 'localhost',
   database: 'lightbnb'
 });
-
 
 // the following assumes that you named your connection variable `pool`
 pool.query(`SELECT title FROM properties LIMIT 10;`).then(response => {console.log('connected to database successfully')});
@@ -23,17 +21,16 @@ pool.query(`SELECT title FROM properties LIMIT 10;`).then(response => {console.l
  * @return {Promise<{}>} A promise to the user.
  */
 const getUserWithEmail = function(email) {
-  return pool
-  .query(`SELECT * FROM users WHERE email = $1`, [email])
-  .then((result) => {
-    if (!result.rows.length) {
-      return (null);
-    }
-    return SpeechRecognitionResultList.rows[0];
-  })
-  .catch((err) => {
-    console.log(err.message);
-  });
+  return Promise.resolve(pool
+    .query(`SELECT * FROM users WHERE email = $1`, [email])
+    .then((result) => {
+      console.log(result.rows[0]);
+      if (users)
+        return result.rows[0];
+    })
+    .catch((err) => {
+      console.log(err.message);
+    }));
 }
 exports.getUserWithEmail = getUserWithEmail;
 
@@ -43,17 +40,16 @@ exports.getUserWithEmail = getUserWithEmail;
  * @return {Promise<{}>} A promise to the user.
  */
 const getUserWithId = function(id) {
-  return pool
-  .query(`SELECT * FROM users WHERE id = $1`, [id])
-  .then((result) => {
-    if (!result.rows.length) {
-      return (null);
-    }
-    return result.rows[0];
-  })
-  .catch((err) => {
-    console.log(err.message);
-  });
+  return Promise.resolve(pool
+    .query(`SELECT * FROM users WHERE id = $1`, [id])
+    .then((result) => {
+      console.log(result.rows[0]);
+      if (users)
+        return result.rows[0];
+    })
+    .catch((err) => {
+      console.log(err.message);
+    }));
 }
 exports.getUserWithId = getUserWithId;
 
@@ -64,17 +60,15 @@ exports.getUserWithId = getUserWithId;
  * @return {Promise<{}>} A promise to the user.
  */
 const addUser =  function(user) {
-  return pool
-  .query(`INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING *`, [user.name, user.email, user.password])
-  .then((result) => {
-    if (!result.rows.length) {
-      return (null)
-    }
-    return result.rows[0];
-  })
-  .catch((err) => {
-    console.log(err.message);
-  });
+  return Promise.resolve(pool.
+    query('INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING *', [user.name, user.email, user.password])
+    .then((result) => {
+      console.log(result.rows[0]);
+      return result.rows[0];
+    })
+    .catch((err) => {
+      console.log(err.message);
+    }));
 }
 exports.addUser = addUser;
 
@@ -102,7 +96,6 @@ exports.getAllReservations = getAllReservations;
   return pool
     .query(`SELECT * FROM properties LIMIT $1`, [limit])
     .then((result) => {
-      console.log(result.rows);
       return result.rows;
     })
     .catch((err) => {
